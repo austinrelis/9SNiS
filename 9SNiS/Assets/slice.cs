@@ -5,63 +5,30 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class slice : MonoBehaviour
 {
-    List<Vector3> linePoints = new List<Vector3>();
-    LineRenderer lineRenderer;
-    public float startWidth = 1.0f;
-    public float endWidth = 1.0f;
-    public float threshold = 0.001f;
-    Camera thisCamera;
-    int lineCount = 0;
+    LineRenderer line;
+    Vector2 mousePos;
 
-    Vector3 lastPos = Vector3.one * float.MaxValue;
-
-
-    void Awake()
+    // initializes linerenderer parameters
+    void Start()
     {
-        thisCamera = Camera.main;
-        lineRenderer = GetComponent<LineRenderer>();
-       
+        line = GetComponent<LineRenderer>();
     }
 
+    // runs every frame
     void Update()
     {
-        Vector3 mousePos = Input.mousePosition;
-        mousePos.z = thisCamera.nearClipPlane;
-        float mouseposz = mousePos.z;
-        Vector3 mouseWorld = thisCamera.ScreenToWorldPoint(mousePos);
-        while (Input.GetMouseButton(0))
+        // if mousekey pressed
+        if (Input.GetMouseButton(0))
         {
-            float dist = Vector3.Distance(lastPos, mouseWorld);
-            if (dist <= threshold)
-                return;
-
-            lastPos = mouseWorld;
-            if (linePoints == null)
-                linePoints = new List<Vector3>();
-            linePoints.Add(mouseWorld);
-
-            //move player to end of the line (mouse world?)
-
-            UpdateLine();
+            mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            line.positionCount++;
+            line.SetPosition(line.positionCount - 1, mousePos);
         }
-        if (!Input.GetMouseButton(0))
+        else
         {
-            int position = (int)mouseposz;
-            lineRenderer.SetVertexCount(position);
-            lastPos = transform.position;
+               line.SetVertexCount(0);
         }
+
     }
 
-
-    void UpdateLine()
-    {
-        lineRenderer.SetWidth(startWidth, endWidth);
-        lineRenderer.SetVertexCount(linePoints.Count);
-
-        for (int i = lineCount; i < linePoints.Count; i++)
-        {
-            lineRenderer.SetPosition(i, linePoints[i]);
-        }
-        lineCount = linePoints.Count;
-    }
 }
